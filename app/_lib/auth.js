@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { getGuest } from "./data-service";
+import { createGuest, getGuest } from "./data-service";
 
 const authConfig = {
   providers: [
@@ -17,19 +17,23 @@ const authConfig = {
     },
     async signIn({ user, account, profile }) {
       try {
-        // 第一次登入時確認 guest table 沒有重複的 email 則新增使用者
+        // 第一次登入時確認 guest table 是否有重複的 email 若無則新增使用者
         const existingGuest = await getGuest(user.email);
         if (!existingGuest) {
           await createGuest({
             email: user.email,
-            name: user.name,
-            image: user.image,
+            fullName: user.name,
           });
         }
         return true;
       } catch (error) {
         return false;
       }
+    },
+    async session({ session, user }) {
+      const guest = await getGuest(session.user.email);
+      session.user.guestId = guest.id;
+      return session;
     },
   },
   pages: {
