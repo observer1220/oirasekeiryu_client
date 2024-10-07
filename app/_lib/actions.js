@@ -4,8 +4,15 @@
  */
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { auth, signIn, signOut } from "./auth";
-import { updateGuest } from "./data-service";
+import {
+  deleteBooking,
+  getBookings,
+  updateBooking,
+  updateGuest,
+} from "./data-service";
+import { redirect } from "next/navigation";
 
 // this action only triggered on SignInButton Component's form element
 export async function signInAction() {
@@ -34,4 +41,58 @@ export async function updateGuestAction(formData) {
 
   const updateData = { nationality, countryFlag, nationalID };
   await updateGuest(session.user.guestId, updateData);
+  // after data updated, revalidate the path of the page
+  revalidatePath("/account/profile");
+}
+
+export async function deleteReservation(bookingId) {
+  const session = await auth();
+  const guestBookings = await getBookings(session.user.guestId);
+  const guestBookingIds = guestBookings.map((booking) => booking.id);
+
+  // Only authorized member can manipulate the database
+  if (!session) {
+    throw new Error("You must be logged in");
+  }
+
+  // Prevent hacker change the database
+  if (!guestBookingIds.includes(bookingId)) {
+    throw new Error("You're not allow to delete this booking");
+  }
+
+  await deleteBooking(bookingId);
+  revalidatePath("/account/reservations");
+}
+
+export async function updateBookingAction(formData) {
+  const bookingId = Number(formData.get("bookingId"));
+
+  // 1) Authentication
+  const session = await auth();
+  if (!session) {
+    throw new Error("You must be logged in");
+  }
+
+  // 2) Authorization,  Prevent hacker update the database
+  const guestBookings = await getBookings(session.user.guestId);
+  const guestBookingIds = guestBookings.map((booking) => booking.id);
+  if (!guestBookingIds.includes(bookingId)) {
+    throw new Error("You're not allow to update this booking");
+  }
+
+  // 3) Update data
+  const updatedData = {
+    numGuests: Number(formData.get("numGuests")),
+    observations: formData.get("observations").slice(0, 1000),
+  };
+
+  // 4) Mutation
+  await updateBooking(bookingId, updatedData);
+
+  // 5) Revalidation
+  revalidatePath(`/account/reservations/edit/${bookingId}`);
+  revalidatePath("/account/reservations");
+
+  // 6) Redirecting
+  redirect("/account/reservations");
 }
