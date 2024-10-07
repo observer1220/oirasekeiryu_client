@@ -1,9 +1,13 @@
+/**
+ * This page is not for Server Component, but for Server Actions
+ * Only execute on server side，no worry about CSRF attack
+ */
 "use server";
 
-import { signIn, signOut } from "./auth";
+import { auth, signIn, signOut } from "./auth";
+import { updateGuest } from "./data-service";
 
-// 這個 action 會在 SignInButton 元件的 form 表單觸發
-// 只在 server 端執行，因此不需要擔心 CSRF 攻擊，也不需擔心資料外洩至客戶端
+// this action only triggered on SignInButton Component's form element
 export async function signInAction() {
   // 成功登入 Google 後，導向 "/account" 頁面
   await signIn("google", { redirectTo: "/account" });
@@ -11,4 +15,23 @@ export async function signInAction() {
 
 export async function signOutAction() {
   await signOut({ redirectTo: "/" });
+}
+
+export async function updateGuestAction(formData) {
+  const session = await auth();
+
+  // Only authorized member can manipulate the database
+  if (!session) {
+    throw new Error("You must be logged in");
+  }
+
+  const nationalID = formData.get("nationalID");
+  const [nationality, countryFlag] = formData.get("nationality").split("%");
+
+  if (!/^[a-zA-Z0-9]{6,12}$/.test(nationalID)) {
+    throw new Error("Please provide a valid national ID");
+  }
+
+  const updateData = { nationality, countryFlag, nationalID };
+  await updateGuest(session.user.guestId, updateData);
 }
