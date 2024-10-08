@@ -7,6 +7,7 @@
 import { revalidatePath } from "next/cache";
 import { auth, signIn, signOut } from "./auth";
 import {
+  createBooking,
   deleteBooking,
   getBookings,
   updateBooking,
@@ -45,15 +46,42 @@ export async function updateGuestAction(formData) {
   revalidatePath("/account/profile");
 }
 
-export async function deleteReservation(bookingId) {
-  const session = await auth();
-  const guestBookings = await getBookings(session.user.guestId);
-  const guestBookingIds = guestBookings.map((booking) => booking.id);
-
+export async function createBookingAction(bookingData, formData) {
   // Only authorized member can manipulate the database
+  const session = await auth();
   if (!session) {
     throw new Error("You must be logged in");
   }
+
+  const newBooking = {
+    ...bookingData,
+    guestId: session.user.guestId,
+    numGuests: Number(formData.get("numGuests")),
+    observations: formData.get("observations").slice(0, 1000),
+    extrasPrice: 0,
+    totalPrice: bookingData.cabinPrice,
+    status: "unconfirmed",
+    isPaid: false,
+    hasBreakfast: false,
+  };
+
+  await createBooking(newBooking);
+  revalidatePath(`/cabins/${bookingData.cabinId}`);
+  redirect("/cabins/thankyou");
+}
+
+export async function deleteBookingAction(bookingId) {
+  // use for testing useOptimistic
+  // await new Promise((res) => setTimeout(res, 5000));
+
+  // Only authorized member can manipulate the database
+  const session = await auth();
+  if (!session) {
+    throw new Error("You must be logged in");
+  }
+
+  const guestBookings = await getBookings(session.user.guestId);
+  const guestBookingIds = guestBookings.map((booking) => booking.id);
 
   // Prevent hacker change the database
   if (!guestBookingIds.includes(bookingId)) {
