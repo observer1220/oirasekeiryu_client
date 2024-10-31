@@ -46,7 +46,7 @@ function DateSelector({ setting, bookedDates, cabin }) {
         fromDate={new Date()}
         toYear={new Date().getFullYear() + 5}
         captionLayout="dropdown"
-        numberOfMonths={2}
+        numberOfMonths={1}
         disabled={(days) =>
           // days are the day that display in the calendar
           isPast(days) ||
