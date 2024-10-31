@@ -20,7 +20,7 @@ function DeleteReservation({ bookingId, onDelete }) {
       {!isPending ? (
         <>
           <TrashIcon className="h-5 w-5 text-primary-6 00 group-hover:text-primary-800 transition-colors" />
-          <span className="mt-1">Delete</span>
+          <span className="mt-1 hidden md:block">Delete</span>
         </>
       ) : (
         <span className="mx-auto">

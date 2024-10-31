@@ -10,7 +10,6 @@ function ReservationList({ bookings }) {
     bookings,
     (curBookings, bookingId) => {
       return curBookings.filter((booking) => booking.id !== bookingId);
-
       // Create will be like...
       // return [...curBookings, newBookingId]
     }

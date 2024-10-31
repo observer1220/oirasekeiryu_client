@@ -27,7 +27,7 @@ const navLinks = [
   },
 ];
 
-function SideNavigation() {
+export default function SideNavigation() {
   const pathname = usePathname();
 
   return (
@@ -41,7 +41,7 @@ function SideNavigation() {
               }`}
               href={link.href}
             >
-              {link.icon}
+              <span>{link.icon}</span>
               <span>{link.name}</span>
             </Link>
           </li>
@@ -54,5 +54,3 @@ function SideNavigation() {
     </nav>
   );
 }
-
-export default SideNavigation;
