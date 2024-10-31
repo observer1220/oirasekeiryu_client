@@ -2,7 +2,7 @@ import { UsersIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
 
-function CabinCard({ cabin }) {
+export default function CabinCard({ cabin }) {
   const { id, name, maxCapacity, regularPrice, discount, image } = cabin;
 
   return (
@@ -11,7 +11,6 @@ function CabinCard({ cabin }) {
         <Image
           src={image}
           fill
-          sizes="100%"
           alt={`Cabin ${name}`}
           className="object-cover border-r border-primary-800"
         />
@@ -59,5 +58,3 @@ function CabinCard({ cabin }) {
     </div>
   );
 }
-
-export default CabinCard;
