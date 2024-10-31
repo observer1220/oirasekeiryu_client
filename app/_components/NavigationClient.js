@@ -35,7 +35,7 @@ export default function NavigationClient({ session }) {
       <ul
         id="menu"
         className={`${
-          menuOpen ? "flex absolute right-0 w-36" : "hidden"
+          menuOpen ? "flex absolute right-1" : "hidden"
         }  flex-col md:flex md:flex-row md:gap-16`}
       >
         <li>
@@ -61,19 +61,19 @@ export default function NavigationClient({ session }) {
               className="hover:text-accent-400 transition-colors flex items-center gap-4"
             >
               <img
-                className="h-8 rounded-full"
+                className="h-8 rounded-full hidden md:block"
                 src={session.user.image}
                 alt={session.user.name}
                 referrerPolicy="no-referrer"
               />
-              <span>Guest area</span>
+              <span>Guest</span>
             </Link>
           ) : (
             <Link
               href="/account"
               className="hover:text-accent-400 transition-colors"
             >
-              Guest area
+              Guest
             </Link>
           )}
         </li>
